@@ -39,9 +39,18 @@ header {
   padding: 30px 5px;
 }
 #game-field {
-  background: #aaa;
+  background: rgba(65,105,225 , 0.5);
   display: block;
   margin: 0 auto;
+}
+.score-field {
+  background: rgba(65,105,225 ,0.8);
+  width: 300px;
+  min-width: 300px;
+  margin: 0 auto;
+  padding: 5px 10px;
+  color: white;
+  font-size: 12px;
 }
 
 @media (max-width: 576px) {

@@ -20,10 +20,12 @@ $(function() {
 
   let theBall, 
       timerId,
-      box_x, box_y, box_id;
+      deadZone;
+  let num = 50;
   let boxes = [];
-  let reflectedJustBefore = false;
-  let updateInterval = 5;
+  let updateInterval = 10;
+  let scoreBox = $('#score');
+  let score = 0;
 
 
   class Ball {
@@ -61,11 +63,21 @@ $(function() {
       this.y = y;
       this.num = num;
       this.id = id;
-      this.color = `rgb(20, 50, 200)`;
+      this.xRange = [];
+      this.yRange = [];
+      // ボールの半径5の分だけ大きい範囲で、ボールの中心座標と比較する
+      for (let i = 0; i < 41; i++) {
+        this.xRange.push(this.x - 5 + i);
+        this.yRange.push(this.y -5 + i);
+      }
+      this.isIn = false;
+      this.reflectedJustBefore = false;
     }
     draw() {
       // 30 * 30
-      ctx.fillStyle = this.color;
+      this.hue = this.num * 6;
+      this.color = `hsl(${this.hue}, 70%, 60%)`
+      ctx.fillStyle = this.isIn ? 'red ': this.color;
       ctx.fillRect(this.x, this.y, 30, 30);
       ctx.fillStyle = 'white';
       ctx.textAlign = 'center';
@@ -73,19 +85,24 @@ $(function() {
       ctx.fillText(this.num, this.x + 15, this.y + 15);
     }
     checkBall() {
-      let theX = theBall.x;
-      let theY = theBall.y;
+      let theX = Math.round(theBall.x);
+      let theY = Math.round(theBall.y);
       let theR = theBall.r;
-      // reflectedJustBeforeば応急処置！
-   
-      let isUpDown = theY + theR > this.y && theY - theR < this.y + 30 && theX + theR < this.x + 30 && theX - theR > this.x;
-      let isLeftRight = theX + theR > this.x && theX - theR < this.x + 30 && theY - theR > this.y && theY + theR < this.y + 30;
 
-      if (!reflectedJustBefore) {
+      let isXin = this.xRange.includes(theX);
+      let isYin = this.yRange.includes(theY);
+      this.isIn = isXin && isYin;
+   
+      let isUpDown = theY + theR >= this.y && theY - theR <= this.y + 30 && theX + theR <= this.x + 30 && theX - theR >= this.x;
+      let isLeftRight = theX + theR >= this.x && theX - theR <= this.x + 30 && theY - theR >= this.y && theY + theR <= this.y + 30;
+
+      // ボックスの中にボールがあるか判定
+
+      if (!this.reflectedJustBefore && this.isIn) {
         if (isUpDown && isLeftRight) {
           // ボックスの角に当たっている
-          // console.log('斜め');
-          if (theX <= this.x || theX >= this.x + 30) {
+          console.log('斜め');
+          if (rand(0, 1)) {
             typeA();
             this.metBox();
           } else {
@@ -95,22 +112,23 @@ $(function() {
         } else if (isLeftRight) {
           theBall.vx *= -1;
           this.metBox();
-          // console.log('左右に当たった！');
+          console.log('左右に当たった！');
         } else if (isUpDown) {
           theBall.vy *= -1;
           this.metBox();
-          // console.log('上下に当たった！');
+          console.log('上下に当たった！');
         }
       }
-
     }
     metBox() {
-      reflectedJustBefore = true;
+      this.reflectedJustBefore = true;
       this.num--;
+      score++;
+      scoreBox.text(score);
       if (this.num === 0) this.deleteBox();
       setTimeout(() => { 
-        reflectedJustBefore = false;
-        // console.log('not just before');
+        this.reflectedJustBefore = false;
+        console.log('not just before');
       }, updateInterval * 5);
     }
 
@@ -124,48 +142,21 @@ $(function() {
     }
   }
 
-  function gameInit() {
-    theBall = new Ball(rand(100, 200), 480, 2, -2, 5);
-    setBoxes();
-    console.log(boxes);
-    update();
+  class DeadZone {
+    draw() {
+      ctx.fillStyle = 'rgba(255, 0, 0, 0.7)';
+      ctx.fillRect(0, 450, canvas.width, 50);
+    }
   }
-  function setBoxes() {
-    // example
-    // for(let i = 0; i < 5; i++) {
-    //   box_x = 60 * i + 10;
-    //   for(let j = 0; j < 5; j++) {
-    //     box_y = 60 * j + 10;
-    //     box_id = boxes.length;
-    //     // idは要素が消えた後lengthと整合性なくなる
-    //     boxes.push( new Box(box_x, box_y, 100, box_id) );
-    //   }
-    // }
 
-    // 上段
-    for (let i = 0; i < 10; i++) {
-      boxes.push( new Box(30 * i, 0, 100, boxes.length) )
-    }
-    // 左列
-    for (let i = 0; i < 10; i++) {
-      boxes.push( new Box(0, 30 * i + 30, 100, boxes.length) )
-    }
-    // 右列
-    for (let i = 0; i < 10; i++) {
-      boxes.push( new Box(270, 30 * i + 30, 100, boxes.length) )
-    }
-    // 2列目
-    for (let i = 0; i < 9; i++) {
-      boxes.push( new Box(67.5, 30 * i + 60, 100, boxes.length) )
-    }
-    // 3列目
-    for (let i = 0; i < 9; i++) {
-      boxes.push( new Box(135, 30 * i + 60, 100, boxes.length) )
-    }
-    // 4列目
-    for (let i = 0; i < 9; i++) {
-      boxes.push( new Box(202.5, 30 * i + 60, 100, boxes.length) )
-    }
+  function gameInit() {
+    theBall = new Ball(150, 450, 3, -2);
+    setBoxes();
+    boxes.forEach(box => { box.draw(); });
+    console.log(boxes);
+    deadZone = new DeadZone;
+    deadZone.draw();
+    update();
   }
 
   function clearField() {
@@ -174,14 +165,48 @@ $(function() {
   function update() {
     clearField();
     theBall.draw();
+    console.log(theBall.x, theBall.y);
     theBall.wallReflect();
     boxes.forEach(box => {
       box.draw();
       box.checkBall();
     });
+    deadZone.draw();
+
     timerId = setTimeout(() => {
       update();
     }, updateInterval);
+  }
+
+  function setBoxes() {
+    // 上段
+    for (let i = 0; i < 10; i++) {
+      boxes.push( new Box(30 * i, 0, num, boxes.length) )
+    }
+    // 左列
+    for (let i = 0; i < 12; i++) {
+      boxes.push( new Box(0, 30 * i + 30, num, boxes.length) )
+    }
+    // 右列
+    for (let i = 0; i < 12; i++) {
+      boxes.push( new Box(270, 30 * i + 30, num, boxes.length) )
+    }
+    // 2列目
+    for (let i = 0; i < 8; i++) {
+      boxes.push( new Box(70, 40 * i + 60, num, boxes.length) )
+    }
+    // 3列目
+    for (let i = 0; i < 8; i++) {
+      boxes.push( new Box(100, 40 * i + 60, num, boxes.length) )
+    }
+    // 4列目
+    for (let i = 0; i < 8; i++) {
+      boxes.push( new Box(170, 40 * i + 60, num, boxes.length) )
+    }
+    // 5列目
+    for (let i = 0; i < 8; i++) {
+      boxes.push( new Box(200, 40 * i + 60, num, boxes.length) )
+    }
   }
 
   gameInit();
@@ -190,28 +215,18 @@ $(function() {
     return Math.floor(Math.random() * (max - min + 1) + min);
   }
   function typeA() {
-    if (theBall.vx <= 10 && theBall.vy <= 10) {
-      let vx = theBall.vx * -0.366;
-      theBall.vx = Math.round(vx * 1000) / 1000;
-      let vy = theBall.vy * 2.73;
-      theBall.vy = Math.round(vy * 1000) / 1000;
-    } else {
-      theBall.vx = 2;
-      theBall.vy = 2;
-    }
-    console.log('typeA: ' + theBall.vx + theBall.vy)
+    let vx = Math.round(theBall.vx * -1.4 * 100) / 100;
+    theBall.vx = vx <= 8 && vx > 1.5 ? vx : 2;
+    let vy = Math.round(theBall.vy * 0.7 * 100) / 100;
+    theBall.vy = vy <= 8 && vy > 1.5 ? vy : 2;
+    console.log('typeA: ' + theBall.vx, theBall.vy)
   }
   function typeB() {
-    if (theBall.vx <= 10 && theBall.vy <= 10) {
-      let vy = theBall.vy * -0.366;
-      theBall.vy = Math.round(vy * 1000) / 1000;
-      let vx = theBall.vx * 2.73;
-      theBall.vx = Math.round(vx * 1000) / 1000;
-    } else {
-      theBall.vx = 2;
-      theBall.vy = 2;
-    }
-    console.log('typeB: ' + theBall.vx + theBall.vy);
+    let vy = Math.round(theBall.vy * -0.8 * 100) / 100;
+    theBall.vy = vy <= 8 && vy > 1.5 ? vy : 2;
+    let vx = Math.round(theBall.vx * 1.25 * 100) / 100;
+    theBall.vx = vx <= 8 && vx > 1.5 ? vx : 2;
+    console.log('typeB: ' + theBall.vx, theBall.vy);
   }
 
   setInterval(() => {
