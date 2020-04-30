@@ -1,0 +1,54 @@
+a {
+  color: white;
+}
+a:hover {
+  color: white;
+  opacity: 0.8;
+  text-decoration: none;
+}
+
+header {
+  background: black;
+  line-height: 50px;
+  clear: both;
+  height: 50px;
+  padding-left: 20px;
+  padding-right: 20px;
+}
+[class*="header-"] {
+  display: inline-block;
+  color: white;
+}
+.header-left {
+  float: left;
+}
+.header-right {
+  float: right;
+}
+
+.container {
+  width: 90%;
+  min-width: 300px;
+  min-height: 200px;
+  margin: 10px auto;
+  background: #eee;
+}
+
+.game-outer {
+  width: 100%;
+  padding: 30px 5px;
+}
+#game-field {
+  background: #aaa;
+  display: block;
+  margin: 0 auto;
+}
+
+@media (max-width: 576px) {
+  .container {
+    width: 100%;
+  }
+  .game-outer {
+    padding: 5px;
+  }
+}
