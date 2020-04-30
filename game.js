@@ -23,18 +23,18 @@ $(function() {
       deadZone;
   let num = 50;
   let boxes = [];
-  let updateInterval = 10;
+  let updateInterval = 20;
   let scoreBox = $('#score');
   let score = 0;
 
 
   class Ball {
-    constructor(x, y, vx, vy, r = 5) {
+    constructor(x, y, vx, vy) {
       this.x = x;
       this.y = y;
       this.vx = vx;
       this.vy = vy;
-      this.r = r;
+      this.r = 5;
     }
     draw() {
       ctx.beginPath();
@@ -66,10 +66,32 @@ $(function() {
       this.xRange = [];
       this.yRange = [];
       // ボールの半径5の分だけ大きい範囲で、ボールの中心座標と比較する
-      for (let i = 0; i < 37; i++) {
-        this.xRange.push(this.x - 3 + i);
-        this.yRange.push(this.y - 3 + i);
+      for (let i = 0; i < 41; i++) {
+        this.xRange.push(this.x - 5 + i);
+        this.yRange.push(this.y - 5 + i);
       }
+
+      // -5 ~ -1 | 0 ~ 30 | 31 ~ 35 (それぞれ+i)
+      this.xSpliced = Array.from(this.xRange);
+      this.xSpliced.splice(5, 31);
+      this.ySpliced = Array.from(this.yRange);
+      this.ySpliced.splice(5, 31);
+      this.xSliced = Array.from(this.xRange);
+      this.xSliced = this.xSliced.slice(5, 36)
+      this.ySliced = Array.from(this.yRange);
+      this.ySliced = this.ySliced.slice(5, 36);
+
+      this.xCorner = this.xSpliced;
+      this.yCorner = this.ySpliced;
+
+      this.xColumn = this.xSpliced;
+      this.yColumn = this.ySliced;
+
+      this.xRow = this.xSliced;
+      this.yRow = this.ySpliced;
+
+      console.log(this.xSliced)
+
       this.isIn = false;
       this.reflectedJustBefore = false;
     }
@@ -88,20 +110,15 @@ $(function() {
       let theX = Math.round(theBall.x);
       let theY = Math.round(theBall.y);
       let theR = theBall.r;
+ 
+      this.isIn = this.xRange.includes(theX) && this.yRange.includes(theY);
+      let isCorner = this.xCorner.includes(theX) && this.yCorner.includes(theY);
+      let isLeftRight = this.xColumn.includes(theX) && this.yColumn.includes(theY);
+      let isUpDown = this.xRow.includes(theX) && this.yRow.includes(theY);
 
-      let isXin = this.xRange.includes(theX);
-      let isYin = this.yRange.includes(theY);
-      this.isIn = isXin && isYin;
-   
-      let isUpDown = theY + theR >= this.y && theY - theR <= this.y + 30 && theX + theR <= this.x + 30 && theX - theR >= this.x;
-      let isLeftRight = theX + theR >= this.x && theX - theR <= this.x + 30 && theY - theR >= this.y && theY + theR <= this.y + 30;
-
-      // ボックスの中にボールがあるか判定
-
-      if (this.isIn) {
-        if (isUpDown && isLeftRight) {
-          // ボックスの角に当たっている
-          console.log('斜め');
+      if (!this.reflectedJustBefore && this.isIn) {
+        if (isCorner) {
+          console.log('角に当たった！');
           if (rand(0, 1)) {
             typeA();
             this.metBox();
@@ -109,14 +126,14 @@ $(function() {
             typeB();
             this.metBox();
           }
-        } else if (isLeftRight) {
-          theBall.vx *= -1;
-          this.metBox();
-          console.log('左右に当たった！');
         } else if (isUpDown) {
           theBall.vy *= -1;
           this.metBox();
           console.log('上下に当たった！');
+        } else if (isLeftRight) {
+          theBall.vx *= -1;
+          this.metBox();
+          console.log('左右に当たった！');
         }
       }
     }
@@ -150,7 +167,7 @@ $(function() {
   }
 
   function gameInit() {
-    theBall = new Ball(160, 450, 4, -3);
+    theBall = new Ball(160, 450, 2, -2);
     setBoxes();
     boxes.forEach(box => { box.draw(); });
     console.log(boxes);
@@ -192,19 +209,19 @@ $(function() {
     }
     // 2列目
     for (let i = 0; i < 8; i++) {
-      boxes.push( new Box(70, 38 * i + 60, num, boxes.length) )
+      boxes.push( new Box(70, 40 * i + 60, num, boxes.length) )
     }
     // 3列目
     for (let i = 0; i < 8; i++) {
-      boxes.push( new Box(100, 38 * i + 60, num, boxes.length) )
+      boxes.push( new Box(100, 40 * i + 60, num, boxes.length) )
     }
     // 4列目
     for (let i = 0; i < 8; i++) {
-      boxes.push( new Box(170, 38 * i + 60, num, boxes.length) )
+      boxes.push( new Box(170, 40 * i + 60, num, boxes.length) )
     }
     // 5列目
     for (let i = 0; i < 8; i++) {
-      boxes.push( new Box(200, 38 * i + 60, num, boxes.length) )
+      boxes.push( new Box(200, 40 * i + 60, num, boxes.length) )
     }
   }
 
