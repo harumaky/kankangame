@@ -66,9 +66,9 @@ $(function() {
       this.xRange = [];
       this.yRange = [];
       // ボールの半径5の分だけ大きい範囲で、ボールの中心座標と比較する
-      for (let i = 0; i < 41; i++) {
-        this.xRange.push(this.x - 5 + i);
-        this.yRange.push(this.y -5 + i);
+      for (let i = 0; i < 37; i++) {
+        this.xRange.push(this.x - 3 + i);
+        this.yRange.push(this.y - 3 + i);
       }
       this.isIn = false;
       this.reflectedJustBefore = false;
@@ -98,7 +98,7 @@ $(function() {
 
       // ボックスの中にボールがあるか判定
 
-      if (!this.reflectedJustBefore && this.isIn) {
+      if (this.isIn) {
         if (isUpDown && isLeftRight) {
           // ボックスの角に当たっている
           console.log('斜め');
@@ -150,7 +150,7 @@ $(function() {
   }
 
   function gameInit() {
-    theBall = new Ball(150, 450, 3, -2);
+    theBall = new Ball(160, 450, 4, -3);
     setBoxes();
     boxes.forEach(box => { box.draw(); });
     console.log(boxes);
@@ -165,7 +165,6 @@ $(function() {
   function update() {
     clearField();
     theBall.draw();
-    console.log(theBall.x, theBall.y);
     theBall.wallReflect();
     boxes.forEach(box => {
       box.draw();
@@ -193,19 +192,19 @@ $(function() {
     }
     // 2列目
     for (let i = 0; i < 8; i++) {
-      boxes.push( new Box(70, 40 * i + 60, num, boxes.length) )
+      boxes.push( new Box(70, 38 * i + 60, num, boxes.length) )
     }
     // 3列目
     for (let i = 0; i < 8; i++) {
-      boxes.push( new Box(100, 40 * i + 60, num, boxes.length) )
+      boxes.push( new Box(100, 38 * i + 60, num, boxes.length) )
     }
     // 4列目
     for (let i = 0; i < 8; i++) {
-      boxes.push( new Box(170, 40 * i + 60, num, boxes.length) )
+      boxes.push( new Box(170, 38 * i + 60, num, boxes.length) )
     }
     // 5列目
     for (let i = 0; i < 8; i++) {
-      boxes.push( new Box(200, 40 * i + 60, num, boxes.length) )
+      boxes.push( new Box(200, 38 * i + 60, num, boxes.length) )
     }
   }
 
@@ -216,16 +215,16 @@ $(function() {
   }
   function typeA() {
     let vx = Math.round(theBall.vx * -1.4 * 100) / 100;
-    theBall.vx = vx <= 8 && vx > 1.5 ? vx : 2;
+    theBall.vx = vx <= 12 && vx > 1.5 ? vx : 3;
     let vy = Math.round(theBall.vy * 0.7 * 100) / 100;
-    theBall.vy = vy <= 8 && vy > 1.5 ? vy : 2;
+    theBall.vy = vy <= 12 && vy > 1.5 ? vy : 3;
     console.log('typeA: ' + theBall.vx, theBall.vy)
   }
   function typeB() {
     let vy = Math.round(theBall.vy * -0.8 * 100) / 100;
-    theBall.vy = vy <= 8 && vy > 1.5 ? vy : 2;
+    theBall.vy = vy <= 12 && vy > 1.5 ? vy : 3;
     let vx = Math.round(theBall.vx * 1.25 * 100) / 100;
-    theBall.vx = vx <= 8 && vx > 1.5 ? vx : 2;
+    theBall.vx = vx <= 12 && vx > 1.5 ? vx : 3;
     console.log('typeB: ' + theBall.vx, theBall.vy);
   }
 
