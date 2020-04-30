@@ -23,6 +23,7 @@ $(function() {
       box_x, box_y, box_id;
   let boxes = [];
   let reflectedJustBefore = false;
+  let updateInterval = 5;
 
 
   class Ball {
@@ -54,13 +55,13 @@ $(function() {
       if (this.y + this.r > canvas.height / dpr) { this.vy *= -1; }
     }
   }
-  class box {
+  class Box {
     constructor(x, y, num, id) {
       this.x = x;
       this.y = y;
       this.num = num;
       this.id = id;
-      this.color = `rgb(${rand(100, 255)}, 50, 40)`;
+      this.color = `rgb(20, 50, 200)`;
     }
     draw() {
       // 30 * 30
@@ -75,46 +76,42 @@ $(function() {
       let theX = theBall.x;
       let theY = theBall.y;
       let theR = theBall.r;
+      // reflectedJustBeforeば応急処置！
+   
+      let isUpDown = theY + theR > this.y && theY - theR < this.y + 30 && theX + theR < this.x + 30 && theX - theR > this.x;
+      let isLeftRight = theX + theR > this.x && theX - theR < this.x + 30 && theY - theR > this.y && theY + theR < this.y + 30;
 
-      // 角判定を導入する
       if (!reflectedJustBefore) {
-        // ボールの右端がボックスの左端より大きいかつボールの左端がボックスの右端より小さいとき、ボールがボックスの高さの中にある->左右に当たった
-        // (ボックスの幅内に入る&&それが高さ内にある)
-        if (theX + theR > this.x && theX - theR < this.x + 30) {
-          console.log('左右1: ボックスのx域に入った');
-          if (theY - theR > this.y && theY + theR < this.y + 30) {
+        if (isUpDown && isLeftRight) {
+          // ボックスの角に当たっている
+          // console.log('斜め');
+          if (theX <= this.x || theX >= this.x + 30) {
+            typeA();
             this.metBox();
-            theBall.vx *= -1;
-            console.log('左右2: 左右に当たった！');
+          } else {
+            typeB();
+            this.metBox();
           }
+        } else if (isLeftRight) {
+          theBall.vx *= -1;
+          this.metBox();
+          // console.log('左右に当たった！');
+        } else if (isUpDown) {
+          theBall.vy *= -1;
+          this.metBox();
+          // console.log('上下に当たった！');
         }
       }
-      if (!reflectedJustBefore) {
-        // ボールの下端がボックスの上端より大きいかつボールの上端がボックスの下端より小さいとき、ボールがボックスの幅の中にある->上下に当たった
-        // (ボックスの高さ内に入る&&それが幅内にある)
-        if (theY + theR > this.y && theY - theR < this.y + 30) {
-          console.log('上下1: ボックスのy域に侵入');
-          // ボールの右端がボックスの左端より大きいかつボールの左端がボックスの右端よりも小さい
-          if (theX + theR > this.x + 3 && theX - theR < this.x + 27) {
-            // 左右に当たった後、続けて上下も当たり判定起こらないように、ボックスの幅を小さく仮定する
-            this.metBox();
-            theBall.vy *= -1;
-            console.log('上下2: 上下に当たった！');
-          }
-        }
-      }
+
     }
     metBox() {
       reflectedJustBefore = true;
       this.num--;
-      if (this.num === 0) {
-        console.log('0!!!');
-        this.deleteBox();
-      }
+      if (this.num === 0) this.deleteBox();
       setTimeout(() => { 
-        reflectedJustBefore = false
-        console.log('not just before');
-      }, 100);
+        reflectedJustBefore = false;
+        // console.log('not just before');
+      }, updateInterval * 5);
     }
 
     deleteBox() {
@@ -127,22 +124,47 @@ $(function() {
     }
   }
 
-
   function gameInit() {
-    theBall = new Ball(rand(100, 200), 400, 5, -5);
+    theBall = new Ball(rand(100, 200), 480, 2, -2, 5);
     setBoxes();
     console.log(boxes);
     update();
   }
   function setBoxes() {
-    for(let i = 0; i < 4; i++) {
-      box_x = 80 * i + 100;
-      for(let j = 0; j < 4; j++) {
-        box_y = 80 * j + 100;
-        box_id = boxes.length;
-        // idは要素が消えた後lengthと整合性なくなる
-        boxes.push( new box(box_x, box_y, 5, box_id) );
-      }
+    // example
+    // for(let i = 0; i < 5; i++) {
+    //   box_x = 60 * i + 10;
+    //   for(let j = 0; j < 5; j++) {
+    //     box_y = 60 * j + 10;
+    //     box_id = boxes.length;
+    //     // idは要素が消えた後lengthと整合性なくなる
+    //     boxes.push( new Box(box_x, box_y, 100, box_id) );
+    //   }
+    // }
+
+    // 上段
+    for (let i = 0; i < 10; i++) {
+      boxes.push( new Box(30 * i, 0, 100, boxes.length) )
+    }
+    // 左列
+    for (let i = 0; i < 10; i++) {
+      boxes.push( new Box(0, 30 * i + 30, 100, boxes.length) )
+    }
+    // 右列
+    for (let i = 0; i < 10; i++) {
+      boxes.push( new Box(270, 30 * i + 30, 100, boxes.length) )
+    }
+    // 2列目
+    for (let i = 0; i < 9; i++) {
+      boxes.push( new Box(67.5, 30 * i + 60, 100, boxes.length) )
+    }
+    // 3列目
+    for (let i = 0; i < 9; i++) {
+      boxes.push( new Box(135, 30 * i + 60, 100, boxes.length) )
+    }
+    // 4列目
+    for (let i = 0; i < 9; i++) {
+      boxes.push( new Box(202.5, 30 * i + 60, 100, boxes.length) )
     }
   }
 
@@ -159,22 +181,40 @@ $(function() {
     });
     timerId = setTimeout(() => {
       update();
-    }, 100);
+    }, updateInterval);
   }
 
   gameInit();
 
-
-  
   function rand(min, max) {
     return Math.floor(Math.random() * (max - min + 1) + min);
   }
-  function reflectRand() {
-    // 反射速度にこの少数をかけると不安定
-    let num = Math.random() * (1.05 - 0.93) + 0.93;
-    num *= 100;
-    num = Math.round(num);
-    return num / 100
-    // だんだん遅くなる
+  function typeA() {
+    if (theBall.vx <= 10 && theBall.vy <= 10) {
+      let vx = theBall.vx * -0.366;
+      theBall.vx = Math.round(vx * 1000) / 1000;
+      let vy = theBall.vy * 2.73;
+      theBall.vy = Math.round(vy * 1000) / 1000;
+    } else {
+      theBall.vx = 2;
+      theBall.vy = 2;
+    }
+    console.log('typeA: ' + theBall.vx + theBall.vy)
   }
+  function typeB() {
+    if (theBall.vx <= 10 && theBall.vy <= 10) {
+      let vy = theBall.vy * -0.366;
+      theBall.vy = Math.round(vy * 1000) / 1000;
+      let vx = theBall.vx * 2.73;
+      theBall.vx = Math.round(vx * 1000) / 1000;
+    } else {
+      theBall.vx = 2;
+      theBall.vy = 2;
+    }
+    console.log('typeB: ' + theBall.vx + theBall.vy);
+  }
+
+  setInterval(() => {
+    console.log(theBall.vx + ', ' + theBall.vy);
+  }, 1000);
 });
