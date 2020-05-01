@@ -22,14 +22,16 @@ $(function() {
   canvas.style.width = String(canvas.width / dpr) + "px";
   canvas.style.height = String(canvas.height / dpr) + "px";
 
-  let theBall, 
-      timerId,
-      deadZone;
-  let num = 50;
-  let boxes = [];
-  let updateInterval = 10;
+  let theBall, // ボールのインスタンス
+      updateID, // 描画更新update()をコールバックするのsetTimeout
+      deadZone; // 下部のゲームアウト領域インスタンス
+  let num = 50; // 一つのボックスのHP？の初期値
+  let boxes = []; // ボックスのインスタンス格納配列
+  let updateInterval = 10; // update()更新間隔(ms)
+  let reflectedJustBefore = false; // すぐさっきボールがボックスに反射したばかりか？
   let score = 0;
-
+  let playing = false;
+  let theArrow; // アローのインスタンス
 
   class Ball {
     constructor(x, y, vx, vy) {
@@ -37,7 +39,7 @@ $(function() {
       this.y = y;
       this.vx = vx;
       this.vy = vy;
-      this.r = 5;
+      this.r = 5; // 半径固定
     }
     draw() {
       ctx.beginPath();
@@ -45,21 +47,25 @@ $(function() {
       ctx.arc(this.x, this.y, this.r, 0, 2 * Math.PI, true);
       ctx.fill();
     }
-    wallReflect() {
+    move() {
       this.x += this.vx;
       this.y += this.vy;
       // 右、左衝突
       if (this.x + this.r > canvas.width / dpr || this.x - this.r < 0) {
-        this.vx *= -1
+        this.vx *= -1;
       }
       // 上
       if (this.y - this.r < 0) { 
-        this.vy *= -1
+        this.vy *= -1;
       }
-      // 下
-      if (this.y + this.r > canvas.height / dpr) { this.vy *= -1; }
+      // デットゾーン
+      if (this.y >= 450) {
+        finishGame();
+      }
     }
   }
+
+  // ボックス（ブロックにした方がよかったなと後悔）
   class Box {
     constructor(x, y, num, id) {
       this.x = x;
@@ -93,13 +99,12 @@ $(function() {
       this.yRow = this.ySpliced;
 
       this.isIn = false;
-      this.reflectedJustBefore = false;
     }
     draw() {
       // 30 * 30
       this.hue = this.num * 6;
       this.color = `hsl(${this.hue}, 50%, 60%)`
-      ctx.fillStyle = this.isIn ? 'red ': this.color;
+      ctx.fillStyle = this.isIn ? 'red': this.color;
       ctx.fillRect(this.x, this.y, 30, 30);
       ctx.fillStyle = 'white';
       ctx.textAlign = 'center';
@@ -115,11 +120,11 @@ $(function() {
       let isLeftRight = this.xColumn.includes(theX) && this.yColumn.includes(theY);
       let isUpDown = this.xRow.includes(theX) && this.yRow.includes(theY);
 
-      if (!this.reflectedJustBefore && this.isIn) {
+      if (!reflectedJustBefore && this.isIn) {
         if (isCorner) {
           console.log('角にあたった！')
           theBall.vy *= -1;
-          theBall.vx *= -1;
+          theBall.vx *= 1.01;
           this.metBox();
         } else if (isUpDown) {
           theBall.vy *= -1;
@@ -133,90 +138,128 @@ $(function() {
       }
     }
     metBox() {
-      this.reflectedJustBefore = true;
+      reflectedJustBefore = true;
       this.num--;
       score++;
       $('#score').text(score);
       if (this.num === 0) this.deleteBox();
       setTimeout(() => { 
-        this.reflectedJustBefore = false;
-        console.log('not just before');
-      }, updateInterval * 10);
+        reflectedJustBefore = false;
+      }, updateInterval * 5);
     }
 
     deleteBox() {
       let thisId = this.id;
-      boxes.filter(function(item, index) {
-        if (item.id === thisId) {
+      // boxesの中のそれぞれのインスタンスから、idが消去したいボックスと同じものを探す
+      boxes.filter(function(box, index) {
+        if (box.id === thisId) {
           boxes.splice(index, 1);
+          // ここで削除。それぞれのboxインデックス番号が1減る
+          // よって次も初期化時に設定した固有のidで消したいboxを探す
         }
       });
     }
   }
-
   class DeadZone {
     draw() {
-      ctx.fillStyle = 'rgba(255, 0, 0, 0.4)';
+      ctx.fillStyle = theBall.y <= 450 ? 'rgba(255, 0, 0, 0.4)' : 'rgba(255, 0, 0, 0.8)';
       ctx.fillRect(0, 450, canvas.width, 50);
     }
   }
 
+  // アロー（下の矢印制御）(canvasではなくDOM -> スタイルはcss)
+  class Arrow {
+    constructor() {
+      this.deg = -10; // 時計回りが正だから、-10度が初期値
+      this.updateRad = 0; // deg = 80cos(Rad)-90のRad（無限に大きくなってく）
+      this.running = false;
+    }
+    calcRad() {
+      return Math.PI / 180 * Math.abs(this.deg);
+      // 呼び出された瞬間の角度をラジアンに変換
+    }
+    show() {
+      $('#arrow').show(); // 表示命令は更新(drow内に書く)必要ない
+    }
+    drow() {
+      // 角度は-10 ~ -170度間を、cosカーブの振動に合わせて更新
+      this.deg = 80 * Math.cos(this.updateRad) - 90;
+      $('#arrow').css('transform', `rotate(${this.deg}deg)`);
+      this.updateRad = this.updateRad + Math.PI / 270;
+      this.running = true;
+    }
+    update() {
+      let that = this;
+      this.updateID = setInterval(function() { that.drow() }, 30);
+    }
+    stop() {
+      clearInterval( this.updateID );
+      console.log(this.updateID)
+      this.running = false
+    }
+  }
+
+  // 初期化
   function gameInit() {
+    score = 0;
+    $('#score').text(score);
+    playing = false;
+    boxes = [];
+
+    // インスタンス作成
     theBall = new Ball(150, 440, 2, -2);
     deadZone = new DeadZone;
     setBoxes();
+
+    // 初期描画
+    theBall.draw();
     boxes.forEach(box => { box.draw(); });
-    theBall.draw();
     deadZone.draw();
-    StartModule();
-    // update();
-  }
 
-  function StartModule() {
-    let isArrowRunning = false;
-    let deg;
-    $('#game-field').on('click', () => {
-      if (!isArrowRunning) {
-        $('#arrow').show();
-        // -10 から -170度間をスイングする
-        let count = 0;
-        deg = -10;
-        setInterval(() => {
-          deg = 80 * Math.cos(count) - 90;
-          $('#arrow').css('transform', `rotate(${deg}deg)`);
-          count = count + Math.PI / 360;
-        }, 20);
+    $('#bottom-text').show();
+  }
+  gameInit(); // ページを読み込んだら即初期化
+
+  // ゲームスタート操作（スイングするアローの角度に対応した向きに発射）
+  $('#game-field, #arrow').on('click', () => {
+    if (!theArrow) {
+      theArrow = new Arrow; // はじめの1クリックでインスタンス作成
+    }
+    if (!playing) { // プレイ中にクリックしても意味ない
+      if (!theArrow.running) {
+        theArrow.show(); // display:none解除
+        theArrow.update(); // -10 ~ -170度の間をスイング
         $('#bottom-text').fadeOut();
-        isArrowRunning = true;
-      } else {
-        console.log(deg)
-        let rad = Math.PI / 180 * Math.abs(deg);
-        theBall.vx = 2 * Math.cos(rad);
-        theBall.vy = -2 * Math.sin(rad);
-        update();
+      } else { // 既にアローがスイングしてるときにクリックしたら
+        playing = true; // プレイ開始フラッグ
+        theArrow.stop(); 
         $('#arrow').fadeOut();
-        isArrowRunning = false;
+        let rad = theArrow.calcRad(); // この瞬間の角度をラジアンに変換
+        theBall.vx = 2 * Math.cos(rad); // ボールの初速度設定(vx, vy)
+        theBall.vy = -2 * Math.sin(rad);
+        updateID = setInterval(update, updateInterval); // スタート
       }
-    });
-    
-  }
-
-  function clearField() {
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
-  }
+    }
+  });
+  
+  // このupdate()はclearInterval(updateID)でstop
   function update() {
-    clearField();
+    ctx.clearRect(0, 0, canvas.width, canvas.height); // コンテクスト全消し
+    theBall.move();
     theBall.draw();
-    theBall.wallReflect();
+    // 全てのboxインスタンスに当たり判定と描画を実行
     boxes.forEach(box => {
-      box.draw();
       box.checkBall();
+      box.draw();
     });
-    deadZone.draw();
+    deadZone.draw(); // ほぼ静的なコンテクストだけど、全消ししてるからまた描画
+  }
 
-    timerId = setTimeout(() => {
-      update();
-    }, updateInterval);
+  // alertで応急処置
+  function finishGame() {
+    clearInterval(updateID); // 描画update解除
+    alert('スコア：' + score);
+    gameInit();
   }
 
   function setBoxes() {
@@ -234,7 +277,7 @@ $(function() {
     }
     // 2列目
     for (let i = 0; i < 6; i++) {
-      boxes.push( new Box(70, 50 * i + 60, num, boxes.length) )
+      boxes.push( new Box(60, 50 * i + 60, num, boxes.length) )
     }
     // 3列目
     for (let i = 0; i < 6; i++) {
@@ -246,11 +289,9 @@ $(function() {
     }
     // 5列目
     for (let i = 0; i < 6; i++) {
-      boxes.push( new Box(200, 50 * i + 60, num, boxes.length) )
+      boxes.push( new Box(210, 50 * i + 60, num, boxes.length) )
     }
   }
-
-  gameInit();
 
   function rand(min, max) {
     return Math.floor(Math.random() * (max - min + 1) + min);
@@ -258,5 +299,6 @@ $(function() {
 
   setInterval(() => {
     console.log(theBall.vx + ', ' + theBall.vy);
+ 
   }, 1000);
 });
