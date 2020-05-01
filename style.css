@@ -8,7 +8,7 @@ a:hover {
 }
 
 header {
-  background: black;
+  background: rgba(65,105,225 ,1);
   line-height: 50px;
   clear: both;
   height: 50px;
@@ -36,7 +36,7 @@ header {
 
 .game-outer {
   width: 100%;
-  padding: 30px 5px;
+  position: relative;
 }
 #game-field {
   background: rgba(65,105,225 , 0.5);
@@ -53,11 +53,43 @@ header {
   font-size: 12px;
 }
 
+#arrow {
+  background:rgba(255,69,0 ,1);
+  height: 80px;
+  width: 80px;
+  display: none;
+  position: absolute;
+  bottom: 20px;
+  left: 50%;
+  transform-origin: 0% 50%;
+  transform: rotate(-10deg);
+  clip-path: polygon(0 45%, 60% 40%, 60% 30%, 100% 50%, 60% 70%, 60% 60%, 0 55%);
+  /* animation: swing 10s linear 0s infinite normal none paused; */
+}
+/* @keyframes swing {
+  50% {
+    transform: rotate(-170deg);
+  }
+  100% {
+    transform: rotate(-10deg);
+  }
+} */
+
+#bottom-text {
+  font-size: 14px;
+  position: absolute;
+  bottom: 10px;
+  left: 50%;
+  transform: translateX(-50%);
+}
+
 @media (max-width: 576px) {
+  header {
+    height: 30px;
+    line-height: 30px;
+    font-size: 14px;
+  }
   .container {
     width: 100%;
-  }
-  .game-outer {
-    padding: 5px;
   }
 }

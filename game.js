@@ -1,6 +1,10 @@
 'use strict';
 $(function() {
 
+  document.addEventListener('touchmove', function(e) {
+    e.preventDefault()
+  }, { passive: false });
+
   const dpr = devicePixelRatio;
   let canvas = document.getElementById('game-field');
   if (!canvas || !canvas.getContext) { return false };
@@ -23,8 +27,7 @@ $(function() {
       deadZone;
   let num = 50;
   let boxes = [];
-  let updateInterval = 20;
-  let scoreBox = $('#score');
+  let updateInterval = 10;
   let score = 0;
 
 
@@ -70,7 +73,6 @@ $(function() {
         this.xRange.push(this.x - 5 + i);
         this.yRange.push(this.y - 5 + i);
       }
-
       // -5 ~ -1 | 0 ~ 30 | 31 ~ 35 (それぞれ+i)
       this.xSpliced = Array.from(this.xRange);
       this.xSpliced.splice(5, 31);
@@ -90,15 +92,13 @@ $(function() {
       this.xRow = this.xSliced;
       this.yRow = this.ySpliced;
 
-      console.log(this.xSliced)
-
       this.isIn = false;
       this.reflectedJustBefore = false;
     }
     draw() {
       // 30 * 30
       this.hue = this.num * 6;
-      this.color = `hsl(${this.hue}, 70%, 60%)`
+      this.color = `hsl(${this.hue}, 50%, 60%)`
       ctx.fillStyle = this.isIn ? 'red ': this.color;
       ctx.fillRect(this.x, this.y, 30, 30);
       ctx.fillStyle = 'white';
@@ -109,8 +109,7 @@ $(function() {
     checkBall() {
       let theX = Math.round(theBall.x);
       let theY = Math.round(theBall.y);
-      let theR = theBall.r;
- 
+
       this.isIn = this.xRange.includes(theX) && this.yRange.includes(theY);
       let isCorner = this.xCorner.includes(theX) && this.yCorner.includes(theY);
       let isLeftRight = this.xColumn.includes(theX) && this.yColumn.includes(theY);
@@ -118,14 +117,10 @@ $(function() {
 
       if (!this.reflectedJustBefore && this.isIn) {
         if (isCorner) {
-          console.log('角に当たった！');
-          if (rand(0, 1)) {
-            typeA();
-            this.metBox();
-          } else {
-            typeB();
-            this.metBox();
-          }
+          console.log('角にあたった！')
+          theBall.vy *= -1;
+          theBall.vx *= -1;
+          this.metBox();
         } else if (isUpDown) {
           theBall.vy *= -1;
           this.metBox();
@@ -141,12 +136,12 @@ $(function() {
       this.reflectedJustBefore = true;
       this.num--;
       score++;
-      scoreBox.text(score);
+      $('#score').text(score);
       if (this.num === 0) this.deleteBox();
       setTimeout(() => { 
         this.reflectedJustBefore = false;
         console.log('not just before');
-      }, updateInterval * 5);
+      }, updateInterval * 10);
     }
 
     deleteBox() {
@@ -161,19 +156,49 @@ $(function() {
 
   class DeadZone {
     draw() {
-      ctx.fillStyle = 'rgba(255, 0, 0, 0.7)';
+      ctx.fillStyle = 'rgba(255, 0, 0, 0.4)';
       ctx.fillRect(0, 450, canvas.width, 50);
     }
   }
 
   function gameInit() {
-    theBall = new Ball(160, 450, 2, -2);
+    theBall = new Ball(150, 440, 2, -2);
+    deadZone = new DeadZone;
     setBoxes();
     boxes.forEach(box => { box.draw(); });
-    console.log(boxes);
-    deadZone = new DeadZone;
+    theBall.draw();
     deadZone.draw();
-    update();
+    StartModule();
+    // update();
+  }
+
+  function StartModule() {
+    let isArrowRunning = false;
+    let deg;
+    $('#game-field').on('click', () => {
+      if (!isArrowRunning) {
+        $('#arrow').show();
+        // -10 から -170度間をスイングする
+        let count = 0;
+        deg = -10;
+        setInterval(() => {
+          deg = 80 * Math.cos(count) - 90;
+          $('#arrow').css('transform', `rotate(${deg}deg)`);
+          count = count + Math.PI / 360;
+        }, 20);
+        $('#bottom-text').fadeOut();
+        isArrowRunning = true;
+      } else {
+        console.log(deg)
+        let rad = Math.PI / 180 * Math.abs(deg);
+        theBall.vx = 2 * Math.cos(rad);
+        theBall.vy = -2 * Math.sin(rad);
+        update();
+        $('#arrow').fadeOut();
+        isArrowRunning = false;
+      }
+    });
+    
   }
 
   function clearField() {
@@ -208,20 +233,20 @@ $(function() {
       boxes.push( new Box(270, 30 * i + 30, num, boxes.length) )
     }
     // 2列目
-    for (let i = 0; i < 8; i++) {
-      boxes.push( new Box(70, 40 * i + 60, num, boxes.length) )
+    for (let i = 0; i < 6; i++) {
+      boxes.push( new Box(70, 50 * i + 60, num, boxes.length) )
     }
     // 3列目
-    for (let i = 0; i < 8; i++) {
-      boxes.push( new Box(100, 40 * i + 60, num, boxes.length) )
+    for (let i = 0; i < 6; i++) {
+      boxes.push( new Box(100, 50 * i + 60, num, boxes.length) )
     }
     // 4列目
-    for (let i = 0; i < 8; i++) {
-      boxes.push( new Box(170, 40 * i + 60, num, boxes.length) )
+    for (let i = 0; i < 6; i++) {
+      boxes.push( new Box(170, 50 * i + 60, num, boxes.length) )
     }
     // 5列目
-    for (let i = 0; i < 8; i++) {
-      boxes.push( new Box(200, 40 * i + 60, num, boxes.length) )
+    for (let i = 0; i < 6; i++) {
+      boxes.push( new Box(200, 50 * i + 60, num, boxes.length) )
     }
   }
 
@@ -229,20 +254,6 @@ $(function() {
 
   function rand(min, max) {
     return Math.floor(Math.random() * (max - min + 1) + min);
-  }
-  function typeA() {
-    let vx = Math.round(theBall.vx * -1.4 * 100) / 100;
-    theBall.vx = vx <= 12 && vx > 1.5 ? vx : 3;
-    let vy = Math.round(theBall.vy * 0.7 * 100) / 100;
-    theBall.vy = vy <= 12 && vy > 1.5 ? vy : 3;
-    console.log('typeA: ' + theBall.vx, theBall.vy)
-  }
-  function typeB() {
-    let vy = Math.round(theBall.vy * -0.8 * 100) / 100;
-    theBall.vy = vy <= 12 && vy > 1.5 ? vy : 3;
-    let vx = Math.round(theBall.vx * 1.25 * 100) / 100;
-    theBall.vx = vx <= 12 && vx > 1.5 ? vx : 3;
-    console.log('typeB: ' + theBall.vx, theBall.vy);
   }
 
   setInterval(() => {
