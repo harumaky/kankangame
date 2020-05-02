@@ -64,16 +64,8 @@ header {
   transform-origin: 0% 50%;
   transform: rotate(-10deg);
   clip-path: polygon(0 45%, 60% 40%, 60% 30%, 100% 50%, 60% 70%, 60% 60%, 0 55%);
-  /* animation: swing 10s linear 0s infinite normal none paused; */
+  -webkit-clip-path: polygon(0 45%, 60% 40%, 60% 30%, 100% 50%, 60% 70%, 60% 60%, 0 55%);
 }
-/* @keyframes swing {
-  50% {
-    transform: rotate(-170deg);
-  }
-  100% {
-    transform: rotate(-10deg);
-  }
-} */
 
 #bottom-text {
   font-size: 14px;

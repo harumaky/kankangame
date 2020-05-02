@@ -1,9 +1,9 @@
 'use strict';
 $(function() {
 
-  document.addEventListener('touchmove', function(e) {
-    e.preventDefault()
-  }, { passive: false });
+  // document.addEventListener('touchmove', function(e) {
+  //   e.preventDefault()
+  // }, { passive: false });
 
   const dpr = devicePixelRatio;
   let canvas = document.getElementById('game-field');
@@ -23,7 +23,8 @@ $(function() {
   canvas.style.height = String(canvas.height / dpr) + "px";
 
   let theBall, // ボールのインスタンス
-      updateID, // 描画更新update()をコールバックするのsetTimeout
+      initBall, // ボールの初期Xランダム
+      updateID, // 描画更新update()をコールバックするためのsetTimeout
       deadZone; // 下部のゲームアウト領域インスタンス
   let num = 50; // 一つのボックスのHP？の初期値
   let boxes = []; // ボックスのインスタンス格納配列
@@ -79,15 +80,15 @@ $(function() {
         this.xRange.push(this.x - 5 + i);
         this.yRange.push(this.y - 5 + i);
       }
-      // -5 ~ -1 | 0 ~ 30 | 31 ~ 35 (それぞれ+i)
+      // ベース：-5 ~ -1 | 0 ~ 30 | 31 ~ 35 (それぞれ+i)
       this.xSpliced = Array.from(this.xRange);
-      this.xSpliced.splice(5, 31);
+      this.xSpliced.splice(5, 31); // -5 ~ -1, 31 ~ 35 
       this.ySpliced = Array.from(this.yRange);
-      this.ySpliced.splice(5, 31);
+      this.ySpliced.splice(5, 31); // -5 ~ -1, 31 ~ 35 
       this.xSliced = Array.from(this.xRange);
-      this.xSliced = this.xSliced.slice(5, 36)
+      this.xSliced = this.xSliced.slice(5, 36) // 0 ~ 30
       this.ySliced = Array.from(this.yRange);
-      this.ySliced = this.ySliced.slice(5, 36);
+      this.ySliced = this.ySliced.slice(5, 36); // 0 ~ 30
 
       this.xCorner = this.xSpliced;
       this.yCorner = this.ySpliced;
@@ -102,7 +103,7 @@ $(function() {
     }
     draw() {
       // 30 * 30
-      this.hue = this.num * 6;
+      this.hue = this.num * 6 + 290;
       this.color = `hsl(${this.hue}, 50%, 60%)`
       ctx.fillStyle = this.isIn ? 'red': this.color;
       ctx.fillRect(this.x, this.y, 30, 30);
@@ -124,7 +125,8 @@ $(function() {
         if (isCorner) {
           console.log('角にあたった！')
           theBall.vy *= -1;
-          theBall.vx *= 1.01;
+          theBall.vx *= 1.1;
+          if (theBall.vx > 5) theBall.vx = 2;
           this.metBox();
         } else if (isUpDown) {
           theBall.vy *= -1;
@@ -179,12 +181,12 @@ $(function() {
       // 呼び出された瞬間の角度をラジアンに変換
     }
     show() {
-      $('#arrow').show(); // 表示命令は更新(drow内に書く)必要ない
+      $('#arrow').css('transform', `translateX(${initBall - 150}px) rotate(${this.deg}deg)`).show(); // initBallの位置に合うようにずらしてから表示
     }
     drow() {
       // 角度は-10 ~ -170度間を、cosカーブの振動に合わせて更新
       this.deg = 80 * Math.cos(this.updateRad) - 90;
-      $('#arrow').css('transform', `rotate(${this.deg}deg)`);
+      $('#arrow').css('transform', `translateX(${initBall - 150}px) rotate(${this.deg}deg)`);
       this.updateRad = this.updateRad + Math.PI / 270;
       this.running = true;
     }
@@ -194,7 +196,6 @@ $(function() {
     }
     stop() {
       clearInterval( this.updateID );
-      console.log(this.updateID)
       this.running = false
     }
   }
@@ -207,7 +208,8 @@ $(function() {
     boxes = [];
 
     // インスタンス作成
-    theBall = new Ball(150, 440, 2, -2);
+    initBall = rand(120, 180); // ボールの初期Xランダム
+    theBall = new Ball(initBall, 440, 2, -2);
     deadZone = new DeadZone;
     setBoxes();
 
@@ -281,15 +283,23 @@ $(function() {
     }
     // 3列目
     for (let i = 0; i < 6; i++) {
-      boxes.push( new Box(100, 50 * i + 60, num, boxes.length) )
+      boxes.push( new Box(105, 50 * i + 75, num, boxes.length) )
     }
     // 4列目
     for (let i = 0; i < 6; i++) {
-      boxes.push( new Box(170, 50 * i + 60, num, boxes.length) )
+      boxes.push( new Box(165, 50 * i + 75, num, boxes.length) )
     }
     // 5列目
     for (let i = 0; i < 6; i++) {
       boxes.push( new Box(210, 50 * i + 60, num, boxes.length) )
+    }
+    // 下段左
+    for (let i = 0; i < 3; i++) {
+      boxes.push( new Box(30 * i, 390, num, boxes.length) )
+    }
+    // 下段右
+    for (let i = 0; i < 3; i++) {
+      boxes.push( new Box(30 * i + 210, 390, num, boxes.length) )
     }
   }
 
@@ -298,7 +308,6 @@ $(function() {
   }
 
   setInterval(() => {
-    console.log(theBall.vx + ', ' + theBall.vy);
- 
+    console.log('Speed(vx,vy): ' + theBall.vx + ', ' + theBall.vy);
   }, 1000);
 });
