@@ -201,7 +201,7 @@ $(function() {
   }
 
   // 初期化
-  function gameInit() {
+  function initGame() {
     score = 0;
     $('#score').text(score);
     playing = false;
@@ -220,7 +220,7 @@ $(function() {
 
     $('#bottom-text').show();
   }
-  gameInit(); // ページを読み込んだら即初期化
+  initGame(); // ページを読み込んだら即初期化
 
   // ゲームスタート操作（スイングするアローの角度に対応した向きに発射）
   $('#game-field, #arrow').on('click', () => {
@@ -261,7 +261,7 @@ $(function() {
   function finishGame() {
     clearInterval(updateID); // 描画update解除
     alert('スコア：' + score);
-    gameInit();
+    initGame();
   }
 
   function setBoxes() {
