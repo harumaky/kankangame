@@ -28,7 +28,7 @@ $(function() {
       deadZone; // 下部のゲームアウト領域インスタンス
   let num = 10; // 一つのボックスのHP？の初期値
   let boxes = []; // ボックスのインスタンス格納配列
-  let updateInterval = 8; // update()更新間隔(ms)
+  let updateInterval = 8; // update()更新間隔8(ms)
   let score = 0;
   let playing = false;
   let theArrow; // アローのインスタンス
@@ -43,7 +43,7 @@ $(function() {
     }
     draw() {
       ctx.beginPath();
-      ctx.fillStyle = 'red';
+      ctx.fillStyle = 'rgba(255, 0, 0, 1)';
       ctx.arc(this.x, this.y, this.r, 0, 2 * Math.PI, true);
       ctx.fill();
     }
@@ -74,6 +74,7 @@ $(function() {
       this.id = id; // 任意のboxを削除する際に使う
       this.collisioned = false; // 衝突判定が出た場合true
       this.afterCollision = 0; // 衝突判定後の描画更新回数
+      this.debugReflect = false;
     }
     determineColor() {
       if(this.collisioned && this.afterCollision < 20) {
@@ -122,16 +123,38 @@ $(function() {
     boxes.some(box => {
       let horizontal = isH(theBall.x, theBall.y, box.x, box.y);
       let vertical = isV(theBall.x, theBall.y, box.x, box.y);
-      if (horizontal) {
-        theBall.vx *= -1;
+
+      // 衝突判定が出た場合
+      if (horizontal || vertical) {
+        // 反射後のスピード
+        let nextVX = horizontal ? theBall.vx * -1 : theBall.vx;
+        let nextVY = vertical ? theBall.vy * -1 : theBall.vy;
+        // 次の座標x,y計算
+        let nextX = theBall.x + nextVX;
+        let nextY = theBall.y + nextVY;
+        // 次のフレームでの判定
+        let NextHorizontal = isH(nextX, nextY, box.x, box.y);
+        let NextVerticval = isH(nextX, nextY, box.x, box.y);
+
+        if (horizontal && NextHorizontal) {
+          // もし、連続して左右判定がでるとボックス辺付近で反射し続けるから、上下に当たったことにする
+          theBall.vy *= -1;
+        } else if (horizontal) {
+          theBall.vx *= -1;
+        }
+
+        if (vertical && NextVerticval) {
+          // 連続して上下判定になるようなら、左右に当たったことにする
+          theBall.vx *= -1;
+        } else if (vertical) {
+          theBall.vy *= -1;
+        }
+
         box.collision();
         return true;
-      } 
-      if (vertical) {
-        theBall.vy *= -1;
-        box.collision();
-        return true;
+        // 1フレームに衝突は一回までだから抜ける
       }
+      
     });
   }
   // a,b=>ballのx,y c,d=>boxの原点(左上)  
@@ -192,7 +215,7 @@ $(function() {
     boxes = [];
 
     // インスタンス作成
-    initBall = rand(120, 180); // ボールの初期Xランダム120~180
+    initBall = 150; // ボールの初期Xランダム120~180
     theBall = new Ball(initBall, 440);
     deadZone = new DeadZone;
     setBoxes();
@@ -220,6 +243,7 @@ $(function() {
         playing = true; // プレイ開始フラッグ
         theArrow.stop(); 
         $('#arrow').fadeOut();
+        // console.log(theArrow.deg); // デバッグ用
         let rad = theArrow.calcRad(); // この瞬間の角度をラジアンに変換
         theBall.vx = 2 * Math.cos(rad); // ボールの初速度設定(vx, vy)
         theBall.vy = -2 * Math.sin(rad);
