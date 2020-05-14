@@ -215,7 +215,7 @@ $(function() {
     boxes = [];
 
     // インスタンス作成
-    initBall = 150; // ボールの初期Xランダム120~180
+    initBall = rand(120, 180); // ボールの初期Xランダム120~180
     theBall = new Ball(initBall, 440);
     deadZone = new DeadZone;
     setBoxes();
