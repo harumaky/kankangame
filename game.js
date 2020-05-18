@@ -239,6 +239,7 @@ $(function() {
         playing = true; // プレイ開始フラッグ
         theArrow.stop(); 
         $('#arrow').fadeOut();
+        $('#restart').css('visibility', 'visible')
         // console.log(theArrow.deg); // デバッグ用
         var rad = theArrow.calcRad(); // この瞬間の角度をラジアンに変換
         theBall.vx = 2 * Math.cos(rad); // ボールの初速度設定(vx, vy)
@@ -262,9 +263,12 @@ $(function() {
 
   function finishGame() {
     clearInterval(updateID); // 描画update解除
-    alert('スコア：' + score); // alertで応急処置
+    ctx.clearRect(0, 0, canvas.width, canvas.height); 
+    $('#restart').css('visibility', 'hidden')
+    showresult(score);
     initGame();
   }
+
 
   function setBoxes() {
     // 上段
@@ -308,6 +312,84 @@ $(function() {
       boxes.push( new Box(30 * i + 210, 390, num, boxes.length) )
     }
   }
+
+  $('#restart').click(function() {
+    finishGame();
+  });
+
+  var sayings = [
+    'Start where you are. Use what you have. Do what you can.',
+    'It is in your moments of decision that your destiny is shaped.',
+    'The world breaks everyone, and afterward, some are strong at the broken places.',
+    'Success is never permanent, and failure is never final.',
+    'Luck is a matter of preparation meeting opportunity.',
+    'Step by step. I can’t see any other way of accomplishing anything.',
+    'He can who thinks he can, and he can’t who thinks he can’t. This is an inexorable, indisputable law.',
+    'Don’t sidestep suffering. You have to go through it to get where you’re going.',
+    'God doesn’t require us to succeed; he only requires that you try.',
+    'It is in your moments of decision that your destiny is shaped.',
+    'It is not because things are difficult that we do not dare; it is because we do not dare that they are difficult.',
+  ]
+
+  function showresult(score) {
+    $('#result').fadeIn(500, function() {
+      $('.result-outer').fadeIn(500);
+    })
+    $('#result-score').text(score + 'pt');
+    var msg;
+    switch (true) {
+      case score >= 790:
+        msg = 'フルコンボ！！！<br>..他のことにこの運を使いましょう'
+      case score >= 700:
+        msg = '数年に一度の逸材<br>しかしフルコンボまではあと90!'
+        break;
+      case score >= 600:
+        msg = 'さては、やり込み勢の方ですね？'
+        break;
+      case score >= 500:
+        msg = 'エクセレント！<br>..しかしトップクラスまでは程遠し。'
+        break;
+      case score >= 450:
+        msg = '優良＋＋'
+        break;
+      case score >= 400:
+        msg = '優良。'
+        break;
+      case score >= 350:
+        msg = '良'
+        break;
+      case score >= 300:
+        msg = '可'
+        break;
+      case score >= 250:
+        msg = 'Well...<br>Nice try'
+        break;
+      case score >= 200:
+        msg = 'よくがんばりました。'
+        break;
+      case score >= 150:
+        msg = 'がんばりましょう'
+        break;
+      case score >= 100:
+        msg = 'あれれ..<br>どうしましたか？'
+        break;
+      case score >= 50:
+        msg = '手が滑りましたか？'
+        break;
+      default:
+        msg = '評価不能'
+        break;
+    } 
+    $('#result-msg').html(msg);
+    $('#saying').text(sayings[rand(0, sayings.length)]);
+    // ランダム名言を表示
+  }
+  
+  $('#result-close').click(function() {
+    $('.result-outer').fadeOut(500, function() {
+      $('#result').slideUp(500);
+    })
+  })
 
   function rand(min, max) {
     return Math.floor(Math.random() * (max - min + 1) + min);

@@ -1,3 +1,15 @@
+* {
+  box-sizing: border-box;
+}
+body {
+  font-family: "Helvetica Neue",
+    Arial,
+    "Hiragino Kaku Gothic ProN",
+    "Hiragino Sans",
+    Meiryo,
+    sans-serif;
+}
+
 a {
   color: white;
 }
@@ -6,6 +18,10 @@ a:hover {
   opacity: 0.8;
   text-decoration: none;
 }
+p {
+  margin-bottom: 0;
+}
+
 
 header {
   background: rgba(65,105,225 ,1);
@@ -25,32 +41,47 @@ header {
 .header-right {
   float: right;
 }
+.header-right a:not(:last-child) {
+  margin-right: 10px;
+}
 
 .container {
-  width: 90%;
+  width: 100%;
   min-width: 300px;
   min-height: 200px;
-  margin: 10px auto;
-  background: #eee;
+  padding-right: 15px;
+  padding-left: 15px;
+  margin-right: auto;
+  margin-left: auto;
+  margin-top: 10px;
 }
 
 .game-outer {
-  width: 100%;
   position: relative;
 }
 #game-field {
   background: rgba(65,105,225 , 0.5);
   display: block;
   margin: 0 auto;
+  cursor: crosshair;
 }
-.score-field {
+.game-topbar {
+  display: flex; 
+  align-items: center;
+  justify-content: space-between;
   background: rgba(65,105,225 ,0.8);
+  margin: auto;
   width: 300px;
-  min-width: 300px;
-  margin: 0 auto;
   padding: 5px 10px;
   color: white;
   font-size: 12px;
+}
+#restart {
+  visibility: hidden;
+  display: inline-block;
+  padding: 2px 5px;
+  border-radius: 4px;
+  background: rgba(65,105,225 ,1);
 }
 
 #arrow {
@@ -75,6 +106,72 @@ header {
   transform: translateX(-50%);
 }
 
+.result {
+  position: fixed;
+  top: 0; left: 0;
+  width: 100%;
+  height: 100vh;
+  background: rgba(250, 250, 250, 0.5);
+  display: none;
+}
+.result-outer {
+  position: absolute;
+  top: 10%; left: 50%;
+  width: 90%;
+  max-width: 400px;
+  transform: translateX(-50%);
+  border-top: 40px solid rgba(65,105,225, .8);
+  text-align: center;
+  background: linear-gradient(-135deg, rgba(30,144,255 ,.8), rgba(138,43,226 , 0.8));
+
+}
+.result-inner {
+  position: relative;
+  width: 100%;
+  height: 100%;
+}
+#result-score {
+  font-size: 3rem;
+  padding: 10px 0;
+  margin-bottom: 20px;
+  font-weight: 900;
+  border-bottom: 3px solid white;
+  border-radius: 50%;
+  color: white;
+}
+#result-msg {
+  font-size: 2rem;
+  font-weight: 900;
+  padding: 10px;
+  color: white;
+}
+#saying {
+  font-family: 'Pacifico', cursive;
+  text-align: left;
+  font-size: 14px;
+  color: white;
+  padding: 10px 20px 100px;
+  /* 閉じるボタン位置下げ用 */
+}
+#result-close {
+  position: absolute;
+  left: 50%; bottom: 20px;
+  transform: translateX(-50%);
+  width: 80%;
+  padding: 5px;
+  border: 3px solid white;
+  border-radius: 15px;
+  color: white;
+  font-size: 1.5rem;
+  font-weight: 900;
+  background: rgba(65,105,225, .5);
+  cursor: pointer;
+  user-select: none;
+}
+#result-close:hover {
+  opacity: 0.6;
+}
+
 @media (max-width: 576px) {
   header {
     height: 30px;
@@ -82,6 +179,6 @@ header {
     font-size: 14px;
   }
   .container {
-    width: 100%;
+    padding: 0;
   }
 }

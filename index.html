@@ -6,25 +6,40 @@
   <title>カンカンするゲーム</title>
   <link rel="stylesheet" href="reboot.css">
   <link rel="stylesheet" href="style.css">
+  <link href="https://fonts.googleapis.com/css2?family=Pacifico&display=swap" rel="stylesheet">
 </head>
 <body>
   <header>
     <p class="header-left">カンカンするゲーム</p>
     <div class="header-right">
-      <a href="https://halabo.net/">Halabo</a>
+      <a href="https://halabo.net/">Halaboホーム</a>
+      <a href="https://halabo.net/wp/kankan-game/">このゲームの記事</a>
     </div>
   </header>
   <main>
     <div class="container">
       <div class="game-outer">
-        <div class="score-field">
-          <div>スコア：<span id="score">0</span></div>
+        <div class="game-topbar">
+          <p>スコア：<span id="score">0</span></p>
+          <p><span id="restart">リスタート</span></p>
         </div>
         <canvas id="game-field" >
           Canvas not suppoerted
         </canvas>
         <div id="arrow"></div>
         <div id="bottom-text">タップしてください</div>
+      </div>
+    </div>
+
+    <div class="result" id="result">
+      <div class="result-outer">
+        <div class="result-inner">
+          <div id="result-score">200pt</div>
+          <div id="result-msg"></div>
+          <div id="saying"></div>
+          <div id="result-close">とじる</div>
+
+        </div>
       </div>
     </div>
   </main>
