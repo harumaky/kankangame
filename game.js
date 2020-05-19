@@ -4,6 +4,8 @@ $(function() {
   // document.addEventListener('touchmove', function(e) {
   //   e.preventDefault()
   // }, { passive: false });
+  var audio = $('audio');
+  audio.prop('volume', 0);
 
   var dpr = devicePixelRatio;
   var canvas = document.getElementById('game-field');
@@ -98,6 +100,7 @@ $(function() {
     this.collisioned = true;
     this.afterCollision = 0;
     // 衝突フラッグを立て、この先20回の描画後に解除
+    $('#collision-sound')[0].play()
     this.num--;
     score++;
     $('#score').text(score);
@@ -264,7 +267,8 @@ $(function() {
   function finishGame() {
     clearInterval(updateID); // 描画update解除
     ctx.clearRect(0, 0, canvas.width, canvas.height); 
-    $('#restart').css('visibility', 'hidden')
+    $('#restart').css('visibility', 'hidden');
+    $('#result-sound')[0].play()
     showresult(score);
     initGame();
   }
@@ -389,6 +393,15 @@ $(function() {
     $('.result-outer').fadeOut(500, function() {
       $('#result').slideUp(500);
     })
+  });
+
+  $('.game-topbar .fas').click(function() {
+    if ( audio.prop('volume') === 0 ) {
+      audio.prop('volume', 1)
+    } else {
+      audio.prop('volume', 0)
+    }
+    $('.game-topbar .fas').toggleClass('active');
   })
 
   function rand(min, max) {

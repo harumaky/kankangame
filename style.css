@@ -66,19 +66,31 @@ header {
   cursor: crosshair;
 }
 .game-topbar {
-  display: flex; 
+  position: relative;
+  display: flex;
   align-items: center;
   justify-content: space-between;
   background: rgba(65,105,225 ,0.8);
-  margin: auto;
+  margin: 0 auto;
   width: 300px;
   padding: 5px 10px;
   color: white;
   font-size: 12px;
 }
+.game-topbar .fas {
+  font-size: 18px;
+}
+.game-topbar .fas:not(.active) {
+  display: none;
+}
+
 #restart {
   visibility: hidden;
   display: inline-block;
+  position: absolute;
+  top: 50%; left: 50%;
+  transform: translateY(-50%) translateX(-50%);
+  user-select: none;
   padding: 2px 5px;
   border-radius: 4px;
   background: rgba(65,105,225 ,1);
@@ -138,12 +150,14 @@ header {
   border-bottom: 3px solid white;
   border-radius: 50%;
   color: white;
+  user-select: none;
 }
 #result-msg {
   font-size: 2rem;
   font-weight: 900;
   padding: 10px;
   color: white;
+  user-select: none;
 }
 #saying {
   font-family: 'Pacifico', cursive;

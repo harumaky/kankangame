@@ -7,6 +7,8 @@
   <link rel="stylesheet" href="reboot.css">
   <link rel="stylesheet" href="style.css">
   <link href="https://fonts.googleapis.com/css2?family=Pacifico&display=swap" rel="stylesheet">
+  <link rel="shortcut icon" href="#">
+  <script src="https://kit.fontawesome.com/16eac9473c.js" crossorigin="anonymous"></script>
 </head>
 <body>
   <header>
@@ -22,6 +24,7 @@
         <div class="game-topbar">
           <p>スコア：<span id="score">0</span></p>
           <p><span id="restart">リスタート</span></p>
+          <p class="audio-toggle"><i class="fas fa-volume-up audio-on"></i><i class="fas fa-volume-mute audio-off active"></i></p>
         </div>
         <canvas id="game-field" >
           Canvas not suppoerted
@@ -42,6 +45,14 @@
         </div>
       </div>
     </div>
+
+    <audio id="collision-sound" preload="auto">
+      <source src="collision.mp3" type="audio/mp3">
+      <p>効果音は再生されません</p>
+    </audio>
+    <audio id="result-sound" preload="auto">
+      <source src="result.mp3" type="audio/mp3">
+    </audio>
   </main>
 
   <script
