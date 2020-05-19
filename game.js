@@ -353,35 +353,38 @@ $(function() {
       case score >= 500:
         msg = 'エクセレント！<br>..しかしトップクラスまでは程遠し。'
         break;
-      case score >= 450:
+      case score >= 400:
         msg = '優良＋＋'
         break;
-      case score >= 400:
+      case score >= 350:
         msg = '優良。'
         break;
-      case score >= 350:
+      case score >= 300:
         msg = '良'
         break;
-      case score >= 300:
+      case score >= 250:
         msg = '可'
         break;
-      case score >= 250:
+      case score >= 200:
         msg = 'Well...<br>Nice try'
         break;
-      case score >= 200:
+      case score >= 150:
         msg = 'よくがんばりました。'
         break;
-      case score >= 150:
+      case score >= 100:
         msg = 'がんばりましょう'
         break;
-      case score >= 100:
+      case score >= 75:
         msg = 'あれれ..<br>どうしましたか？'
         break;
       case score >= 50:
         msg = '手が滑りましたか？'
         break;
+      case score >= 20:
+        msg = '徒然草'
+        break;
       default:
-        msg = '評価不能'
+        msg = '草'
         break;
     } 
     $('#result-msg').html(msg);
