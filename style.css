@@ -190,7 +190,8 @@ header {
   header {
     height: 30px;
     line-height: 30px;
-    font-size: 14px;
+    font-size: 12px;
+    padding: 0 10px;
   }
   .container {
     padding: 0;
